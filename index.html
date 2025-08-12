@@ -1,10 +1,20 @@
-<div id="losses-app-wrap">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>State Losses Map</title>
+
+  <!-- Optional font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    #losses-app-wrap { font-family: Merriweather, Georgia, serif; max-width: 100%; margin: 0 auto; }
+    :root { color-scheme: light; }
+    html, body { height: 100%; }
+    body { margin:0; font-family: Merriweather, Georgia, serif; background:#f5f6fa; }
+    #losses-app-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
     #losses-app {
       display: grid;
       grid-template-areas:
@@ -51,29 +61,33 @@
       #details-panel { margin-left: 4px; }
     }
   </style>
+</head>
+<body>
+  <div id="losses-app-wrap">
+    <div id="losses-app" role="region" aria-label="Interactive map of projected state losses">
+      <h2 id="losses-title">State Losses (2025–26)</h2>
 
-  <div id="losses-app" role="region" aria-label="Interactive map of projected state losses">
-    <h2 id="losses-title">State Losses (2025–26)</h2>
+      <div id="losses-toolbar">
+        <button id="losses-back" type="button" style="display:none">← Back</button>
+      </div>
 
-    <div id="losses-toolbar">
-      <button id="losses-back" type="button" style="display:none">← Back</button>
+      <div id="map-panel">
+        <div id="losses-map" aria-label="US choropleth map" tabindex="0"></div>
+      </div>
+
+      <div id="details-panel" aria-live="polite">
+        <h3 id="losses-state-name"></h3>
+        <p id="losses-state-loss"></p>
+        <p>Other data: OTW</p>
+      </div>
+
+      <div id="losses-sr" aria-live="polite"></div>
     </div>
-
-    <div id="map-panel">
-      <div id="losses-map" aria-label="US choropleth map" tabindex="0"></div>
-    </div>
-
-    <div id="details-panel" aria-live="polite">
-      <h3 id="losses-state-name"></h3>
-      <p id="losses-state-loss"></p>
-      <p>Other data: OTW</p>
-    </div>
-
-    <div id="losses-sr" aria-live="polite"></div>
   </div>
 
   <script>
     (function() {
+      // ---- Load Plotly, then init app
       const CDN = "https://cdn.plot.ly/plotly-2.30.0.min.js";
       function ensurePlotly(cb){
         if (window.Plotly) { cb(); return; }
@@ -172,6 +186,7 @@
         function drawFull() {
           Plotly.react(mapDiv, [traceFull], { ...layoutBase }, config).then(() => {
             Plotly.Plots.resize(mapDiv);
+            window.dispatchEvent(new Event('losses:content-change'));
           });
           backBtn.style.display = 'none';
           details.style.display = 'none';
@@ -198,6 +213,7 @@
           };
           Plotly.react(mapDiv, [zoomTrace], zoomLayout, config).then(() => {
             Plotly.Plots.resize(mapDiv);
+            window.dispatchEvent(new Event('losses:content-change'));
           });
           stateNameEl.textContent = row.name + (UNSUPPORTED.has(code) ? ' (not shown on map)' : '');
           stateLossEl.textContent = `Projected Losses: $${fmt(row.loss)}`;
@@ -236,9 +252,29 @@
 
         const ro = new ResizeObserver(() => {
           Plotly.Plots.resize(mapDiv);
+          window.dispatchEvent(new Event('losses:content-change'));
         });
         ro.observe(mapDiv);
       }
+
+      // --- Height reporter (safe if opened directly) ---
+      function canPostToParent(){
+        try { return window.parent && window.parent !== window; } catch(e){ return false; }
+      }
+      function postHeight(){
+        const h = Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        );
+        if (canPostToParent()) {
+          try { parent.postMessage({ type: 'LOSSMAP_HEIGHT', height: h }, '*'); } catch(e){}
+        }
+      }
+      window.addEventListener('load', postHeight);
+      window.addEventListener('resize', () => { postHeight(); });
+      window.addEventListener('orientationchange', () => { setTimeout(postHeight, 200); });
+      window.addEventListener('losses:content-change', () => { setTimeout(postHeight, 50); });
     })();
   </script>
-</div>
+</body>
+</html>
