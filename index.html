@@ -6,7 +6,6 @@
   <title>State Losses Map</title>
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/iframe-resizer/js/iframeResizer.contentWindow.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -15,7 +14,6 @@
       background: #fff;
       font-family: Merriweather, Georgia, serif;
     }
-
     #losses {
       display: grid;
       grid-template-areas:
@@ -25,18 +23,16 @@
         "details";
       grid-template-columns: 1fr;
       gap: 12px;
-      padding: 16px;
+      padding: 16px 16px 0 16px;
       max-width: 100%;
       box-sizing: border-box;
     }
-
     #title {
       grid-area: title;
       text-align: center;
       margin: 16px 0 6px;
       font-weight: 700;
     }
-
     #toolbar {
       grid-area: toolbar;
       display: flex;
@@ -45,7 +41,6 @@
       align-items: center;
       flex-wrap: wrap;
     }
-
     #toolbar button {
       cursor: pointer;
       padding: 8px 14px;
@@ -54,15 +49,10 @@
       border: 1px solid #ddd;
       background: #fff;
     }
-
     #toolbar button:hover {
       background: #f7f7ff;
     }
-
-    #map-panel {
-      grid-area: map;
-    }
-
+    #map-panel { grid-area: map; }
     #losses-map {
       width: 100%;
       aspect-ratio: 16/9;
@@ -73,30 +63,20 @@
       border: none;
       box-shadow: none;
     }
-
     #losses-map:focus {
       outline: none;
       box-shadow: none;
     }
-
     #details {
       grid-area: details;
       display: none;
       border: 1px solid #eee;
       border-radius: 12px;
       background: #fff;
-      padding: 14px 16px;
+      padding: 12px 14px 8px;
     }
-
-    #details h3 {
-      margin: 0 0 6px;
-      font-size: 20px;
-    }
-
-    #details p {
-      margin: 0 0 6px;
-    }
-
+    #details h3 { margin: 0 0 6px; font-size: 20px; }
+    #details p { margin: 0 0 6px; }
     #sr {
       position: absolute;
       left: -9999px;
@@ -105,7 +85,6 @@
       height: 1px;
       overflow: hidden;
     }
-
     @media (min-width: 980px) {
       #losses {
         grid-template-areas:
@@ -115,10 +94,7 @@
         grid-template-columns: 2.5fr 1fr;
         align-items: start;
       }
-
-      #details {
-        margin-left: 4px;
-      }
+      #details { margin-left: 4px; }
     }
   </style>
 </head>
@@ -167,37 +143,42 @@
         marker: { line: { color: "#ffffff", width: 1 } },
         showscale: true,
         colorbar: {
-        title: "Losses ($)",
-        tickvals: [1_000_000, 500_000_000, 1_000_000_000],
-        ticktext: ["$1,000,000", "$500,000,000", "$1,000,000,000"],
-        orientation: "h",
-        x: 0.5,
-        xanchor: "center",
-        y: 1.05,
-        yanchor: "bottom",
-        len: 0.6,
-        thickness: 12,
-        outlinewidth: 0,
-        ticks: "outside",
-        tickangle: 0
-    }
-
+          title: "Losses ($)",
+          tickvals: [1_000_000, 500_000_000, 1_000_000_000],
+          ticktext: ["$1,000,000", "$500,000,000", "$1,000,000,000"],
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: 1.05,
+          yanchor: "bottom",
+          len: 0.6,
+          thickness: 12,
+          outlinewidth: 0,
+          ticks: "outside",
+          tickangle: 0
+        }
       };
 
-      const layoutBase = {
+      const layoutFull = {
         geo: { scope: "usa", projection: { type: "albers usa" } },
-        margin: { t: 40, r: 10, b: 10, l: 10 },
+        margin: { t: 70, r: 10, b: 40, l: 10 }, // Tighter bottom gap
         dragmode: false
       };
 
-      const config = {
-      responsive: true,
-      displayModeBar: false, 
-      displaylogo: false,
-      scrollZoom: false,
-      doubleClick: "reset"
-};
+      const layoutZoom = {
+        geo: layoutFull.geo,
+        margin: { t: 40, r: 10, b: 120, l: 10 }, // Lots of bottom space for details
+        dragmode: false,
+        geo: { ...layoutFull.geo, fitbounds: "locations" }
+      };
 
+      const config = {
+        responsive: true,
+        displayModeBar: false,
+        displaylogo: false,
+        scrollZoom: false,
+        doubleClick: "reset"
+      };
 
       const mapDiv = document.getElementById('losses-map');
       const backBtn = document.getElementById('back-btn');
@@ -207,7 +188,7 @@
       const sr = document.getElementById('sr');
 
       function drawFull() {
-        Plotly.react(mapDiv, [traceFull], layoutBase, config);
+        Plotly.react(mapDiv, [traceFull], layoutFull, config);
         backBtn.style.display = "none";
         details.style.display = "none";
         stateNameEl.textContent = "";
@@ -219,18 +200,7 @@
       function drawState(code) {
         const r = mapRows.find(r => r.code === code);
         if (!r) return;
-        Plotly.react(mapDiv,
-          [Object.assign({}, traceFull, {
-            locations: [code],
-            z: [r.loss],
-            showscale: false
-          })],
-          Object.assign({}, layoutBase, {
-            margin: { t: 10, r: 10, b: 10, l: 10 },
-            geo: Object.assign({}, layoutBase.geo, { fitbounds: "locations" })
-          }),
-          config
-        );
+        Plotly.react(mapDiv, [Object.assign({}, traceFull, { locations: [code], z: [r.loss], showscale: false })], layoutZoom, config);
         stateNameEl.textContent = r.name;
         stateLossEl.textContent = `Projected Losses: $${fmt(r.loss)}`;
         backBtn.style.display = "inline-block";
@@ -239,29 +209,13 @@
         if (location.hash !== "#" + code) history.replaceState(null, '', '#' + code);
       }
 
-      Plotly.newPlot(mapDiv, [traceFull], layoutBase, config);
-      mapDiv.on('plotly_click', ev => {
-        const c = ev.points[0].location;
-        drawState(c);
-      });
-      backBtn.addEventListener('click', () => {
-        drawFull();
-        mapDiv.focus();
-      });
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && backBtn.style.display !== 'none') {
-          drawFull();
-          mapDiv.focus();
-        }
-      });
-      window.addEventListener('hashchange', () => {
-        const c = (location.hash || "").replace('#', '');
-        c ? drawState(c) : drawFull();
-      });
+      Plotly.newPlot(mapDiv, [traceFull], layoutFull, config);
+      mapDiv.on('plotly_click', ev => drawState(ev.points[0].location));
+      backBtn.addEventListener('click', () => { drawFull(); mapDiv.focus(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && backBtn.style.display !== 'none') { drawFull(); mapDiv.focus(); } });
+      window.addEventListener('hashchange', () => { location.hash ? drawState(location.hash.replace('#', '')) : drawFull(); });
       if (location.hash) drawState(location.hash.replace('#', ''));
-      window.addEventListener('resize', () => {
-        Plotly.Plots.resize(mapDiv)
-      });
+      window.addEventListener('resize', () => Plotly.Plots.resize(mapDiv));
     })();
   </script>
 </body>
