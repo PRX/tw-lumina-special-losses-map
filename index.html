@@ -22,13 +22,10 @@
         "map"
         "details";
       grid-template-columns: 1fr;
-      gap: 8px;
-      padding: 16px;
-      padding-bottom: 16px; /* Ensures bottom content is included */
-      max-width: 100%;
-      box-sizing: border-box;
-      align-items: center;
+      gap: 12px;
+      padding: 16px 8px 8px;
       justify-items: center;
+      box-sizing: border-box;
     }
     #title {
       grid-area: title;
@@ -40,7 +37,10 @@
     #toolbar {
       grid-area: toolbar;
     }
-    #map-panel { grid-area: map; width: 100%; }
+    #map-panel {
+      grid-area: map;
+      width: 100%;
+    }
     #losses-map {
       width: 100%;
       max-width: 1000px;
@@ -48,9 +48,8 @@
       min-height: 450px;
       border-radius: 12px;
       overflow: hidden;
-      background: transparent;
       border: none;
-      box-shadow: none;
+      background: transparent;
     }
     #details {
       grid-area: details;
@@ -62,12 +61,18 @@
       width: 100%;
       max-width: 400px;
     }
-    #details h3 { margin: 0 0 8px; font-size: 1.25em; }
-    #details p { margin: 4px 0; }
+    #details h3 {
+      margin: 0 0 8px;
+      font-size: 1.25em;
+    }
+    #details p {
+      margin: 4px 0;
+    }
     #sr {
       position: absolute;
       left: -9999px;
-      width: 1px; height: 1px;
+      width: 1px;
+      height: 1px;
       overflow: hidden;
     }
     @media (min-width: 980px) {
@@ -77,17 +82,27 @@
           "toolbar toolbar"
           "map details";
         grid-template-columns: 2fr 1fr;
-        align-items: start;
+        padding: 16px 8px 8px;
       }
-      #details { margin-left: 12px; }
+      #losses-map {
+        width: 100%;
+        max-width: none;
+      }
+      #details {
+        margin-left: 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="losses" role="region">
     <h2 id="title">State Losses (2025–26)</h2>
-    <div id="toolbar"><button id="back-btn" style="display:none">← Back</button></div>
-    <div id="map-panel"><div id="losses-map" tabindex="0"></div></div>
+    <div id="toolbar">
+      <button id="back-btn" style="display:none">← Back</button>
+    </div>
+    <div id="map-panel">
+      <div id="losses-map" tabindex="0"></div>
+    </div>
     <div id="details">
       <h3 id="state-name"></h3>
       <p id="state-loss"></p>
@@ -102,12 +117,18 @@
       const losses = [55032190,1594215,144881731,23189572,1013730821,63824864,122665118,17713793,90425294,243363729,166591360,19689594,11944755,379887657,157360595,42931992,37271876,49024539,41802089,12966497,163581648,619722041,229783788,77048991,13207935,169927376,4534580,18575460,10048901,31326132,148328341,12826367,988805385,144375994,8724437,200264505,37579710,42335765,339979784,2124676,44149974,31757306,8813368,58460749,388453912,46148639,9862807,509519,127438527,144935744,11841709,85455267,3409571];
       const codes = { Alabama:"AL", Alaska:"AK", Arizona:"AZ", Arkansas:"AR", California:"CA", Colorado:"CO", Connecticut:"CT", Delaware:"DE", "District of Columbia":"DC", Florida:"FL", Georgia:"GA", Hawaii:"HI", Idaho:"ID", Illinois:"IL", Indiana:"IN", Iowa:"IA", Kansas:"KS", Kentucky:"KY", Louisiana:"LA", Maine:"ME", Maryland:"MD", Massachusetts:"MA", Michigan:"MI", Minnesota:"MN", Mississippi:"MS", Missouri:"MO", Montana:"MT", Nebraska:"NE", Nevada:"NV", "New Hampshire":"NH", "New Jersey":"NJ", "New Mexico":"NM", "New York":"NY", "North Carolina":"NC", "North Dakota":"ND", Ohio:"OH", Oklahoma:"OK", Oregon:"OR", Pennsylvania:"PA", "Puerto Rico":"PR", "Rhode Island":"RI", "South Carolina":"SC", "South Dakota":"SD", Tennessee:"TN", Texas:"TX", Utah:"UT", Vermont:"VT", "Virgin Islands":"VI", Virginia:"VA", Washington:"WA", "West Virginia":"WV", Wisconsin:"WI", Wyoming:"WY" };
       const mapRows = states.map((n,i)=>({name:n,code:codes[n],loss:losses[i]})).filter(r=>r.code!=="PR"&&r.code!=="VI");
-      const colorScale = [[0, "#E5DAFF"],[0.1,"#C6B0FD"],[0.2,"#A786FB"],[0.35,"#8C62F8"],[0.5,"#7845FA"],[0.65,"#7A45FF"],[0.75,"#6E42DE"],[0.85,"#6431E6"],[0.95,"#3D1B91"],[1,"#311579"]];
+      const colorScale = [[0,"#E5DAFF"],[0.1,"#C6B0FD"],[0.2,"#A786FB"],[0.35,"#8C62F8"],[0.5,"#7845FA"],[0.65,"#7A45FF"],[0.75,"#6E42DE"],[0.85,"#6431E6"],[0.95,"#3D1B91"],[1,"#311579"]];
       const traceFull = {
-        type: "choropleth", locationmode: "USA-states", locations: mapRows.map(r=>r.code), z: mapRows.map(r=>r.loss), text: mapRows.map(r=>r.name),
-        hovertemplate: "<b>%{text}</b><br>Losses = $%{z:,}<extra></extra>", colorscale: colorScale, zmin: Math.min(...mapRows.map(r=>r.loss)), zmax: Math.max(...mapRows.map(r=>r.loss)),
+        type:"choropleth", locationmode:"USA-states", locations: mapRows.map(r=>r.code), z: mapRows.map(r=>r.loss),
+        text: mapRows.map(r=>r.name), hovertemplate:"<b>%{text}</b><br>Losses = $%{z:,}<extra></extra>",
+        colorscale: colorScale, zmin: Math.min(...mapRows.map(r=>r.loss)), zmax: Math.max(...mapRows.map(r=>r.loss)),
         marker:{line:{color:"#fff",width:1}}, showscale:true,
-        colorbar:{ title:"Losses ($)", tickvals:[1000000,500000000,1000000000], ticktext:["$1M","$500M","$1B"], orientation:"h", x:0.5, xanchor:"center", y:1.05, yanchor:"bottom", len:0.6, thickness:12, outlinewidth:0, ticks:"outside", tickangle:0 }
+        colorbar:{
+          title:"Losses ($)", tickvals:[1000000,500000000,1000000000],
+          ticktext:["$1M","$500M","$1B"], orientation:"h",
+          x:0.5, xanchor:"center", y:1.05, yanchor:"bottom",
+          len:0.6, thickness:12, outlinewidth:0, ticks:"outside", tickangle:0
+        }
       };
       const layoutFull = {
         geo:{scope:"usa",projection:{type:"albers usa"}}, margin:{t:40,r:10,b:20,l:10}, dragmode:false
@@ -116,10 +137,38 @@
         geo:{scope:"usa",projection:{type:"albers usa"}, fitbounds:"locations"}, margin:{t:40,r:10,b:120,l:10}, dragmode:false
       };
       const config = { responsive:true, displayModeBar:false, displaylogo:false, scrollZoom:false, doubleClick:"reset" };
-      const mapDiv = document.getElementById("losses-map"), backBtn = document.getElementById("back-btn"), details = document.getElementById("details"), stateNameEl = document.getElementById("state-name"), stateLossEl = document.getElementById("state-loss"), sr = document.getElementById("sr");
-      function drawFull(){Plotly.react(mapDiv,[traceFull],layoutFull,config); backBtn.style.display="none"; details.style.display="none"; stateNameEl.textContent=""; stateLossEl.textContent=""; sr.textContent="Full map view"; history.replaceState&&location.hash&&history.replaceState(null,"","#");}
-      function drawState(c){ const r = mapRows.find(r=>r.code===c); if(!r)return; Plotly.react(mapDiv, [Object.assign({},traceFull,{locations:[c],z:[r.loss],showscale:false})], layoutZoom, config); stateNameEl.textContent=r.name; stateLossEl.textContent=`Projected Losses: $${fmt(r.loss)}`; backBtn.style.display="inline-block"; details.style.display="block"; sr.textContent=`Showing ${r.name}`; history.replaceState&&location.hash!==`#${c}`&&history.replaceState(null,"",`#${c}`);}
-      Plotly.newPlot(mapDiv,[traceFull],layoutFull,config); mapDiv.on("plotly_click", ev=>drawState(ev.points[0].location)); backBtn.onclick=()=>{ drawFull(); mapDiv.focus(); }; window.onhashchange=()=>{location.hash?drawState(location.hash.replace("#","")):drawFull();}; window.addEventListener("resize",()=>Plotly.Plots.resize(mapDiv)); if(location.hash)drawState(location.hash.replace("#",""));
+      const mapDiv = document.getElementById("losses-map"),
+            backBtn = document.getElementById("back-btn"),
+            details = document.getElementById("details"),
+            stateNameEl = document.getElementById("state-name"),
+            stateLossEl = document.getElementById("state-loss"),
+            sr = document.getElementById("sr");
+      function drawFull(){
+        Plotly.react(mapDiv,[traceFull],layoutFull,config);
+        backBtn.style.display="none";
+        details.style.display="none";
+        stateNameEl.textContent="";
+        stateLossEl.textContent="";
+        sr.textContent="Full map view";
+        if(location.hash) history.replaceState&&history.replaceState(null,"","#");
+      }
+      function drawState(c){
+        const r = mapRows.find(r=>r.code===c);
+        if(!r) return;
+        Plotly.react(mapDiv,[Object.assign({},traceFull,{locations:[c],z:[r.loss],showscale:false})],layoutZoom,config);
+        stateNameEl.textContent=r.name;
+        stateLossEl.textContent=`Projected Losses: $${fmt(r.loss)}`;
+        backBtn.style.display="inline-block";
+        details.style.display="block";
+        sr.textContent=`Showing ${r.name}`;
+        if(location.hash!==`#${c}`) history.replaceState&&history.replaceState(null,"",`#${c}`);
+      }
+      Plotly.newPlot(mapDiv,[traceFull],layoutFull,config);
+      mapDiv.on("plotly_click",ev=>drawState(ev.points[0].location));
+      backBtn.onclick=()=>{drawFull(); mapDiv.focus();};
+      window.onhashchange=()=>{location.hash?drawState(location.hash.replace("#","")):drawFull();};
+      window.addEventListener("resize",()=>Plotly.Plots.resize(mapDiv));
+      if(location.hash) drawState(location.hash.replace("#",""));
     })();
   </script>
 </body>
