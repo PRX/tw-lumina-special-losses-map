@@ -75,27 +75,6 @@
       border-radius: 12px;
       background: transparent;
     }
-    #details {
-      display: none;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      background: #fff;
-      padding: 12px;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 700px;
-      margin: 12px auto 0;
-    }
-    #details.show {
-      display: block;
-    }
-    #details h3 {
-      margin: 0 0 8px;
-      font-size: 1.25em;
-    }
-    #details p {
-      margin: 4px 0;
-    }
     #sr {
       position: absolute;
       left: -9999px;
@@ -194,11 +173,6 @@
       </div>
       <div id="map-panel">
         <div id="losses-map" tabindex="0"></div>
-        <div id="details">
-          <h3 id="state-name"></h3>
-          <p id="state-loss"></p>
-          <p>Other data: OTW</p>
-        </div>
       </div>
       
       <div id="grid-container">
@@ -581,11 +555,8 @@
       const mapDiv = document.getElementById("losses-map");
       const stateMapZoom = document.getElementById("state-map-zoom");
       const backBtn = document.getElementById("back-btn");
-      const details = document.getElementById("details");
       const gridContainer = document.getElementById("grid-container");
       const mapPanel = document.getElementById("map-panel");
-      const stateNameEl = document.getElementById("state-name");
-      const stateLossEl = document.getElementById("state-loss");
       const gridStateNameEl = document.getElementById("grid-state-name");
       const gridStateLossEl = document.getElementById("grid-state-loss");
       const sr = document.getElementById("sr");
@@ -595,11 +566,8 @@
       function drawFull(){
         Plotly.react(mapDiv, [traceFull], layoutFull, config);
         backBtn.style.display="none";
-        details.classList.remove("show");
         gridContainer.classList.remove("show");
         mapPanel.style.display = "flex";
-        stateNameEl.textContent="";
-        stateLossEl.textContent="";
         sr.textContent="Full map view";
         
         if(currentChart) {
@@ -771,6 +739,7 @@
                     }
                   }
                 },
+                
                 y: {
                   type: 'linear',
                   display: true,
@@ -788,6 +757,7 @@
                   },
                   max: Math.max(...data.dollars) * 1.1,
                   ticks: {
+                    maxTicksLimit: 6,
                     font: {
                       family: 'Merriweather',
                       size: 9
@@ -819,6 +789,11 @@
                   },
                   max: Math.max(Math.max(...data.students), Math.max(...data.jobs)) * 1.1,
                   ticks: {
+                    maxTicksLimit: 6,
+                    stepSize: function() {
+                      const maxVal = Math.max(Math.max(...data.students), Math.max(...data.jobs));
+                      return Math.ceil(maxVal / 5000) * 1000;
+                    },
                     font: {
                       family: 'Merriweather',
                       size: 9
