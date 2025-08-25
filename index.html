@@ -819,6 +819,8 @@
           html.clientHeight, html.scrollHeight, html.offsetHeight
         );
 
+        console.log('New Content Height: ', height);
+
         window.parent.postMessage(
           {
             tw: { dataviz: { height } }
