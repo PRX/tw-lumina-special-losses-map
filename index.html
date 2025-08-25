@@ -819,9 +819,11 @@
           html.clientHeight, html.scrollHeight, html.offsetHeight
         );
 
+        console.log('Parent: ', window.parent);
+        console.log('Top: ', window.top);
         console.log('New Content Height: ', height);
 
-        window.parent.postMessage(
+        window.top.postMessage(
           {
             type: 'TwDatavizUpdateHeight',
             payload: height
