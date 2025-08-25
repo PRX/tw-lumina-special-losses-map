@@ -164,7 +164,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div id="main" class="container">
     <div id="losses" role="region">
       <h2 id="title">State Losses (2025–26)</h2>
       <div id="toolbar">
@@ -815,22 +815,18 @@
       }
 
       function updateIframeHeight() {
-        const body = document.body;
-        const html = document.documentElement;
-        const height = Math.max(
-          body.scrollHeight, body.offsetHeight, 
-          html.clientHeight, html.scrollHeight, html.offsetHeight
-        );
+        setTimeout(() => {
+          const main = document.getElementById('main');
+          const { height } = main.getBoundingClientRect();
 
-        console.log('New Content Height: ', height);
-
-        window.parent.postMessage(
-          {
-            type: 'TwDatavizUpdateHeight',
-            payload: height
-          },
-          '*'
-        );
+          window.parent.postMessage(
+            {
+              type: 'TwDatavizUpdateHeight',
+              payload: height
+            },
+            '*'
+          );
+        }, 0);
       }
 
       Plotly.newPlot(mapDiv, [traceFull], layoutFull, config);
