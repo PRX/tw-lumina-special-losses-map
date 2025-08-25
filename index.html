@@ -150,7 +150,6 @@
     @media (max-width: 768px) {
       #grid-container {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
         min-height: 600px;
       }
       
@@ -812,10 +811,27 @@
         }, 150);
       }
 
+      function updateIframeHeight() {
+        const body = document.body;
+        const html = document.documentElement;
+        const height = Math.max(
+          body.scrollHeight, body.offsetHeight, 
+          html.clientHeight, html.scrollHeight, html.offsetHeight
+        );
+
+        window.parent.postMessage(
+          {
+            tw: { dataviz: { height } }
+          },
+          '*'
+        );
+      }
+
       Plotly.newPlot(mapDiv, [traceFull], layoutFull, config);
       mapDiv.on("plotly_click", ev => {
         if(ev.points && ev.points[0] && ev.points[0].location) {
           drawState(ev.points[0].location);
+          updateIframeHeight();
         }
       });
       backBtn.onclick = () => { drawFull(); mapDiv.focus(); };
@@ -826,14 +842,18 @@
         } else {
           drawFull();
         }
+        updateIframeHeight();
       };
       window.addEventListener("resize", () => {
         Plotly.Plots.resize(mapDiv);
         if(document.getElementById("grid-container").classList.contains("show")) {
           Plotly.Plots.resize(stateMapZoom);
         }
+        updateIframeHeight();
       });
       if(location.hash) drawState(location.hash.replace("#",""));
+
+      updateIframeHeight();
     }
   </script>
 </body>
