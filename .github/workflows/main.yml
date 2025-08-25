@@ -35,6 +35,6 @@ jobs:
 
       - name: Sync files to S3 bucket
         run: |
-          aws s3 sync . s3://prx-theworld-interactive-live/embed/lumina/loses-map \
+          aws s3 sync . s3://prx-theworld-interactive-live/embed/lumina/losses-map \
           --delete \
-          --exclude ".github/*"
+          --exclude ".*/*"
