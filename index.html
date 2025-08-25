@@ -823,7 +823,8 @@
 
         window.parent.postMessage(
           {
-            tw: { dataviz: { height } }
+            type: 'TwDatavizUpdateHeight',
+            payload: height
           },
           '*'
         );
@@ -836,7 +837,11 @@
           updateIframeHeight();
         }
       });
-      backBtn.onclick = () => { drawFull(); mapDiv.focus(); };
+      backBtn.onclick = () => { 
+        drawFull(); 
+        mapDiv.focus();
+        updateIframeHeight();
+      };
       window.onhashchange = () => { 
         const hash = location.hash.replace("#","");
         if(hash) {
