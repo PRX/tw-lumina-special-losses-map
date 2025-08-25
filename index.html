@@ -818,12 +818,10 @@
           body.scrollHeight, body.offsetHeight, 
           html.clientHeight, html.scrollHeight, html.offsetHeight
         );
-
-        console.log('Parent: ', window.parent);
-        console.log('Top: ', window.top);
+        
         console.log('New Content Height: ', height);
 
-        window.top.postMessage(
+        window.parent.postMessage(
           {
             type: 'TwDatavizUpdateHeight',
             payload: height
